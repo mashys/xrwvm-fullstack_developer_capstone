@@ -118,17 +118,22 @@ def get_dealer_reviews(request, dealer_id):
         return JsonResponse({"status":400,"message":"Bad Request"})
 # Create a `get_dealer_details` view to render the dealer details
 def get_dealer_details(request, dealer_id):
-    if (dealer_id):
-        endpoint = '/fetchDealer/' + str(dealer_id)
+    if(dealer_id):
+        endpoint = "/fetchDealer/" + str(dealer_id)
         dealership = get_request(endpoint)
-        return JsonResponse({"status": 200, "dealer": dealership})
+        
+        # THE FIX: If Express sent a single object, wrap it in a list for React
+        if isinstance(dealership, dict):
+            dealership = [dealership]
+            
+        return JsonResponse({"status":200,"dealer":dealership})
     else:
-        return JsonResponse({"status": 400, "message": "Bad request"})
+        return JsonResponse({"status":400,"message":"Bad Request"})
 
 
 # Create a `add_review` view to submit a review
 def add_review(request):
-    if (request.is_user_anonymous == False):
+    if (not request.user.is_anonymous):
         data = json.loads(request.body)
         try:
             repsonse = post_review(data)
@@ -137,3 +142,39 @@ def add_review(request):
             return JsonResponse({"status": 401, "message": "Error in posting review"})
     else:
         return JsonResponse({"status": 203, "message": "Unauthorized"})
+
+def populate(request):
+    car_make_data = [
+        {"name":"Nissan", "description":"Great cars. Japanese technology"},
+        {"name":"Mercedes", "description":"Great cars. German technology"},
+        {"name":"Audi", "description":"Great cars. German technology"},
+        {"name":"Kia", "description":"Great cars. Korean technology"},
+        {"name":"Toyota", "description":"Great cars. Japanese technology"},
+    ]
+
+    car_make_instances = []
+    for data in car_make_data:
+        car_make_instances.append(CarMake.objects.create(name=data['name'], description=data['description']))
+
+    car_model_data = [
+      {"name":"Pathfinder", "type":"SUV", "year": 2023, "car_make":car_make_instances[0]},
+      {"name":"Qashqai", "type":"SUV", "year": 2023, "car_make":car_make_instances[0]},
+      {"name":"XTRAIL", "type":"SUV", "year": 2023, "car_make":car_make_instances[0]},
+      {"name":"A-Class", "type":"SUV", "year": 2023, "car_make":car_make_instances[1]},
+      {"name":"C-Class", "type":"SUV", "year": 2023, "car_make":car_make_instances[1]},
+      {"name":"E-Class", "type":"SUV", "year": 2023, "car_make":car_make_instances[1]},
+      {"name":"A4", "type":"SUV", "year": 2023, "car_make":car_make_instances[2]},
+      {"name":"A5", "type":"SUV", "year": 2023, "car_make":car_make_instances[2]},
+      {"name":"A6", "type":"SUV", "year": 2023, "car_make":car_make_instances[2]},
+      {"name":"Sorrento", "type":"SUV", "year": 2023, "car_make":car_make_instances[3]},
+      {"name":"Carnival", "type":"SUV", "year": 2023, "car_make":car_make_instances[3]},
+      {"name":"Cerato", "type":"Sedan", "year": 2023, "car_make":car_make_instances[3]},
+      {"name":"Corolla", "type":"Sedan", "year": 2023, "car_make":car_make_instances[4]},
+      {"name":"Camry", "type":"Sedan", "year": 2023, "car_make":car_make_instances[4]},
+      {"name":"Kluger", "type":"SUV", "year": 2023, "car_make":car_make_instances[4]},
+    ]
+
+    for data in car_model_data:
+        CarModel.objects.create(name=data['name'], car_make=data['car_make'], type=data['type'], year=data['year'], dealer_id=1)
+
+    return JsonResponse({"status":200,"message":"DB populated successfully"})
