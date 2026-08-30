@@ -1,15 +1,16 @@
 from django.db import models
-from django.utils.timezone import now
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 
+
 class CarMake(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    
+
     def __str__(self):
-        return self.name  # Prints the make name, e.g., "Toyota"
+        # Prints the make name, e.g., "Toyota"
+        return self.name
 
 
 class CarModel(models.Model):
@@ -22,16 +23,16 @@ class CarModel(models.Model):
         (SUV, 'SUV'),
         (WAGON, 'Wagon')
     ]
-    
+
     # Many-to-One relationship with CarMake
     car_make = models.ForeignKey(CarMake, on_delete=models.CASCADE)
-    
+
     dealer_id = models.IntegerField()
     name = models.CharField(max_length=100)
-    
+
     # CharField with choices
     type = models.CharField(max_length=10, choices=CAR_TYPES, default=SUV)
-    
+
     # IntegerField with min and max validators
     year = models.IntegerField(
         default=2023,
@@ -42,4 +43,5 @@ class CarModel(models.Model):
     )
 
     def __str__(self):
-        return f"{self.car_make.name} {self.name}" # Prints e.g., "Toyota Camry"
+        # Prints e.g., "Toyota Camry"
+        return f"{self.car_make.name} {self.name}"
